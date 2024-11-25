@@ -6,6 +6,8 @@ namespace PL_BL_Service.BL
         List<Bus> GetAllBuses();
         Bus GetBus(int id);
         bool AddBus(Bus bus);
+        bool UpdateBus(int id, Bus bus);
+        bool DeleteBus(int id);
 
         //List<Driver> GetAllDrivers();
         //Task<string> GetDriverAsync(int id);

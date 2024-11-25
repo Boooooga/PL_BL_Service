@@ -16,26 +16,28 @@ namespace PL_BL_Service.BL
             try
             {
                 List<Bus> buses = new List<Bus>();
+
                 _rabbitMqClient.SendMessage("Buses GetAll");
+                Thread.Sleep(200);
                 string response = _rabbitMqClient.ReceiveMessage();
 
                 if (string.IsNullOrEmpty(response))
                 {
-                    return null;
+                    return buses;
                 }
 
                 foreach (string json in response.Split('\n'))
                 {
-                    if (json != "") // последняя строка получается пустой и генерирует объект null
+                    if (json != "")
                         buses.Add(JsonConvert.DeserializeObject<Bus>(json));
                 }
+
                 return buses;
             }
             catch (Exception ex)
             {
-                // Логируем ошибку
                 Console.WriteLine($"Ошибка при получении автобусов: {ex.Message}");
-                return null;
+                return new List<Bus>();
             }
         }
         public Bus GetBus(int id)
@@ -44,6 +46,7 @@ namespace PL_BL_Service.BL
             {
                 Bus bus;
                 _rabbitMqClient.SendMessage($"Buses Get {id}");
+                Thread.Sleep(200);
                 string response = _rabbitMqClient.ReceiveMessage();
 
                 if (string.IsNullOrEmpty(response))
@@ -51,7 +54,7 @@ namespace PL_BL_Service.BL
                     return null;
                 }
 
-                response.Replace("\n", "");
+                response = response.Replace("\n", "");
                 bus = JsonConvert.DeserializeObject<Bus>(response);
 
                 return bus;
@@ -67,6 +70,7 @@ namespace PL_BL_Service.BL
             try
             {
                 _rabbitMqClient.SendMessage($"Buses Add {JsonConvert.SerializeObject(bus)}");
+                Thread.Sleep(200);
                 string response = _rabbitMqClient.ReceiveMessage();
 
                 if (string.IsNullOrEmpty(response))
@@ -81,6 +85,41 @@ namespace PL_BL_Service.BL
                 Console.WriteLine($"Ошибка при добавлении автобуса: {ex.Message}");
                 return false;
             }
+        }
+        public bool UpdateBus(int id, Bus bus)
+        {
+            try
+            {
+                _rabbitMqClient.SendMessage($"Buses Update {id} {JsonConvert.SerializeObject(bus)}");
+                Thread.Sleep(200);
+                string response = _rabbitMqClient.ReceiveMessage();
+
+                if (string.IsNullOrEmpty(response))
+                {
+                    Console.WriteLine("Не удалось обновить автобус");
+                    return false;
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка при добавлении автобуса: {ex.Message}");
+                return false;
+            }
+        }
+
+        public bool DeleteBus(int id)
+        {
+            _rabbitMqClient.SendMessage($"Buses Delete {id}");
+            Thread.Sleep(200);
+            string response = _rabbitMqClient.ReceiveMessage();
+
+            if (string.IsNullOrEmpty(response))
+            {
+                Console.WriteLine("Не удалось удалить автобус");
+                return false;
+            }
+            return true;
         }
 
         #endregion

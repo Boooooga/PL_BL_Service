@@ -1,142 +1,177 @@
-﻿@{
-    ViewData["Title"] = "Список автобусов";
-}
-
-<h2>@ViewData["Title"]</h2>
-
-
-    <!-- Форма для ввода ID автобуса -->
-    <h3>Поиск автобуса по ID</h3>
-    <input type="number" id="busIdInput" placeholder="Введите ID автобуса">
-    <button id="getBusButton">Получить автобус</button>
-
-    <!-- Контейнер для отображения информации об автобусе -->
-    <div id="busDetailsContainer"></div>
-
-
-    <!-- Кнопка для получения всех автобусов -->
-    <button id="loadBusesButton">Загрузить автобусы</button>
-
-    <!-- Контейнер для отображения всех автобусов -->
-    <div id="busesContainer"></div>
-
-<form id="addBusForm">
-    <label for="jsonInput">Введите данные автобуса (JSON):</label>
-    <textarea id="jsonInput" rows="10" cols="50">
-    {
-        "Manufacturer": "string",
-        "RegistrationSign": "string",
-        "Capacity": 0
-    }
-    </textarea>
-    <br />
-    <button type="button" onclick="addBus()">Добавить автобус</button>
-</form>
-
-<div id="responseMessage"></div>
-
-<script>
-    document.getElementById("getBusButton").addEventListener("click", function () {
-    const busId = document.getElementById("busIdInput").value; // Исправляем на правильный id
-    if (!busId) {
-        alert("Пожалуйста, введите ID автобуса.");
-        return;
-    }
-
-    fetch(`/GetBus/${busId}`) // Путь для получения одного автобуса по ID
-        .then(response => {
-            if (!response.ok) {
-                throw new Error("Ошибка при получении данных");
-            }
-            return response.json();
-        })
-        .then(data => {
-            const busDetailsContainer = document.getElementById("busDetailsContainer");
-            busDetailsContainer.innerHTML = ""; // Очистить контейнер перед загрузкой новых данных
-
-            if (!data) {
-                busDetailsContainer.innerHTML = "<p>Автобус не найден</p>";
-            } else {
-                busDetailsContainer.innerHTML = `
-                    <div>
-                        <p><strong>ID:</strong> ${data.id}</p>
-                        <p><strong>Марка:</strong> ${data.manufacturer}</p>
-                        <p><strong>Регистрационный номер:</strong> ${data.registrationSign}</p>
-                        <p><strong>Вместимость:</strong> ${data.capacity}</p>
-                    </div>
-                `;
-            }
-        })
-        .catch(error => {
-            console.error(error);
-            document.getElementById("busDetailsContainer").innerHTML = "<p>Ошибка загрузки данных</p>";
-        });
-});
-</script>
-
-<script>
-    document.getElementById("loadBusesButton").addEventListener("click", function () {
-    fetch("/GetAll") // Правильный путь для получения всех автобусов
-        .then(response => {
-            if (!response.ok) {
-                throw new Error("Ошибка при получении данных");
-            }
-            return response.json();
-        })
-        .then(data => {
-            const busesContainer = document.getElementById("busesContainer");
-            busesContainer.innerHTML = ""; // Очистить контейнер перед загрузкой новых данных
-
-            if (data.length === 0) {
-                busesContainer.innerHTML = "<p>Список автобусов пуст</p>";
-            } else {
-                const busesList = data.map(bus => `
-                    <div>
-                        <p><strong>ID:</strong> ${bus.id}</p>
-                        <p><strong>Марка:</strong> ${bus.manufacturer}</p>
-                        <p><strong>Регистрационный номер:</strong> ${bus.registrationSign}</p>
-                        <p><strong>Вместимость:</strong> ${bus.capacity}</p>
-                        <hr>
-                    </div>
-                `).join("");
-                busesContainer.innerHTML = busesList;
-            }
-        })
-        .catch(error => {
-            console.error(error);
-            document.getElementById("busesContainer").innerHTML = "<p>Ошибка загрузки данных</p>";
-        });
-});
-</script>
-
-<script>
-    document.getElementById("addBusButton").addEventListener("click", function () {
-    const busJson = document.getElementById("busInput").value;
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bus Management</title>
     
-    if (!busJson) {
-        alert("Пожалуйста, введите данные автобуса в формате JSON.");
-        return;
-    }
+</head>
+<body>
 
-    fetch("/api/buses", { // Путь для добавления нового автобуса
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: busJson // Отправляем данные в формате JSON
-    })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error("Ошибка при добавлении автобуса");
+    <div class="container">
+        <h1>Таблица "автобусы"</h1>
+
+        <div class="section">
+            <h2>Вывести все автобусы</h2>
+            <button onclick="getAllBuses()">Вывести все автобусы</button>
+            <pre id="getAllBusesResult"></pre>
+        </div>
+
+        <div class="section">
+            <h2>Вывести автобус по Id</h2>
+            <input type="number" id="getBusId" placeholder="Enter Bus ID">
+            <button onclick="getBus()">Вывестити автобус</button>
+            <pre id="getBusResult"></pre>
+        </div>
+
+        <div class="section">
+            <h2>Добавить новый автобус</h2>
+            <textarea id="newBusJson" style="height:150px">{
+                "Manufacturer": "string",
+                "RegistrationSign": "string",
+                "Capacity": 0
+                }</textarea>
+            <br>
+            <button onclick="addBus()">Добавить автобус</button>
+            <pre id="addBusResult"></pre>
+        </div>
+
+        <div class="section">
+            <h2>Обновить автобус по Id</h2>
+            <input type="number" id="updateBusId" placeholder="Id обновляемого автобуса">
+            <br>
+            <textarea id="updateBusJson" style="height:150px">{
+                "Manufacturer": "string",
+                "RegistrationSign": "string",
+                "Capacity": 0
+                }</textarea>
+            <br>
+            <button onclick="updateBus()">Обновить автобус</button>
+            <pre id="updateBusResult"></pre>
+        </div>
+
+        <div class="section">
+            <h2>Удалить автобус по Id</h2>
+            <input type="number" id="deleteBusId" placeholder="Enter Bus ID to Delete">
+            <button onclick="deleteBus()">Удалить автобус</button>
+            <pre id="deleteBusResult"></pre>
+        </div>
+    </div>
+
+    <script>
+        const baseUrl = 'https://localhost:7198'; // Замените на ваш API сервер
+
+        // Функция для получения всех автобусов
+        async function getAllBuses() {
+            const response = await fetch(`${baseUrl}/GetAll`);
+            const result = await response.json();
+            const buses = result; // Предположим, что получаем массив автобусов
+
+            // Создаем таблицу для отображения всех автобусов
+            const tableContainer = document.getElementById('getAllBusesResult');
+            let tableHTML = '<table>';
+
+            // Создаем заголовки таблицы
+            tableHTML += '<thead><tr><th>ID</th><th>Manufacturer</th><th>Registration Sign</th><th>Capacity</th></tr></thead>';
+
+            // Заполняем таблицу данными
+            tableHTML += '<tbody>';
+            buses.forEach(bus => {
+                tableHTML += `
+                            <tr>
+                                <td>${bus.id}</td>
+                                <td>${bus.manufacturer}</td>
+                                <td>${bus.registrationSign}</td>
+                                <td>${bus.capacity}</td>
+                            </tr>
+                        `;
+            });
+            tableHTML += '</tbody></table>';
+
+            // Вставляем таблицу на страницу
+            tableContainer.innerHTML = tableHTML;
+        }
+
+        // Функция для получения автобуса по Id
+        async function getBus() {
+            const id = document.getElementById('getBusId').value;
+            const response = await fetch(`${baseUrl}/GetBus/${id}`);
+            const result = await response.json();
+
+            const tableContainer = document.getElementById('getBusResult');
+
+            // Проверяем, что результат не пустой
+            if (result) {
+                let tableHTML = '<table>';
+
+                tableHTML += '<thead><tr><th>ID</th><th>Manufacturer</th><th>Registration Sign</th><th>Capacity</th></tr></thead>';
+                tableHTML += '<tbody>';
+
+                // Добавляем один ряд с данными автобуса
+                tableHTML += `
+                    <tr>
+                        <td>${result.id}</td>
+                        <td>${result.manufacturer}</td>
+                        <td>${result.registrationSign}</td>
+                        <td>${result.capacity}</td>
+                    </tr>
+                `;
+
+                tableHTML += '</tbody></table>';
+                tableContainer.innerHTML = tableHTML;
+            } else {
+                tableContainer.textContent = 'Автобус не найден';
             }
-            return response.json();
-        })
-        .then(data => {
-            alert("Автобус добавлен успешно!");
-        })
-        .catch(error => {
-            console.error(error);
-            alert("Ошибка при добавлении автобуса");
-        });
-});
-</script>
+        }
+
+        // Функция для добавления нового автобуса
+        async function addBus() {
+            const busJson = document.getElementById('newBusJson').value;
+            const response = await fetch(`${baseUrl}/AddBus`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: busJson
+            });
+            const result = await response.json();
+
+            // Проверка, если результат содержит manufacturer и id
+            if (result.manufacturer && result.id) {
+                document.getElementById('addBusResult').textContent = `Автобус ${result.manufacturer} вместимостью ${result.capacity} с регистрационным знаком ${result.registrationSign} добавлен.`;
+            } else {
+                alert("Ошибка при добавлении автобуса.");
+            }
+        }
+
+        // Функция для обновления существующего автобуса
+        async function updateBus() {
+            const id = document.getElementById('updateBusId').value;
+            const busJson = document.getElementById('updateBusJson').value;
+            const response = await fetch(`${baseUrl}/UpdateBus/${id}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: busJson
+            });
+            const result = await response.json();
+
+            // Логируем информацию об обновлённом автобусе
+            document.getElementById('updateBusResult').textContent = `Автобус ${result.manufacturer} изменён.`;
+            
+        }
+
+        // Функция для удаления автобуса
+        async function deleteBus() {
+            const id = document.getElementById('deleteBusId').value;
+            const response = await fetch(`${baseUrl}/DeleteBus/${id}`, {
+                method: 'POST'
+            });
+
+            // Логируем информацию о удалённом автобусе
+            document.getElementById('deleteBusResult').textContent = `Автобус с Id = ${id} удалён.`;
+        }
+    </script>
+</body>
+</html>

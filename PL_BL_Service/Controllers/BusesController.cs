@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using PL_BL_Service.BL;
 using PL_BL_Service.Models;
 
@@ -19,28 +20,44 @@ namespace PL_BL_Service.Controllers
             return View();
         }
 
-        // Метод для получения списка автобусов
+        // Метод для получения всех автобусов
         [HttpGet("GetAll")]
         public IActionResult GetAllBuses()
         {
-            var buses = _businessService.GetAllBuses(); // Вызов метода, который возвращает список автобусов
-            return Ok(buses); // Возвращаем данные в формате JSON
+            try
+            {
+                var buses = _businessService.GetAllBuses();
+                Console.WriteLine($"Получены автобусы");
+                return Ok(buses);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Ошибка при получении автобусов: {ex.Message}");
+            }
         }
 
         // Метод для получения одного автобуса по id
         [HttpGet("GetBus/{id}")]
         public IActionResult GetBus(int id)
         {
-            var bus = _businessService.GetBus(id); // Вызов метода для получения одного автобуса по id
-            if (bus == null)
+            try
             {
-                return NotFound(); // Если автобус не найден, возвращаем 404
+                var bus = _businessService.GetBus(id); // Вызов метода для получения одного автобуса по id
+                if (bus == null)
+                {
+                    return NotFound(); // Если автобус не найден, возвращаем 404
+                }
+                Console.WriteLine($"Получен автобус {bus.Manufacturer}");
+                return Ok(bus); // Возвращаем данные автобуса в формате JSON
             }
-            return Ok(bus); // Возвращаем данные автобуса в формате JSON
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Ошибка при получении автобуса: {ex.Message}");
+            }
         }
 
         // Метод для добавления нового автобуса
-        [HttpPost]
+        [HttpPost("AddBus")]
         public IActionResult AddBus([FromBody] Bus bus)
         {
             if (bus == null)
@@ -55,6 +72,36 @@ namespace PL_BL_Service.Controllers
             }
 
             return CreatedAtAction(nameof(GetBus), new { id = bus.Id }, bus); // Возвращаем статус 201 (Created) с данными добавленного автобуса
+        }
+
+        // Метод для изменения автобуса по Id
+        [HttpPost("UpdateBus/{id}")]
+        public IActionResult UpdateBus(int id, [FromBody] Bus bus)
+        {
+            Bus updated = bus;
+            if (bus == null)
+            {
+                return BadRequest("Данные не были переданы");
+            }
+
+            bool isUpdated = _businessService.UpdateBus(id, bus);
+            if (!isUpdated)
+            {
+                return BadRequest("Ошибка при обновлении автобуса");
+            }
+
+            return Ok(updated);
+        }
+        [HttpPost("DeleteBus/{id}")]
+        public IActionResult DeleteBus(int id)
+        {
+            bool isDeleted = _businessService.DeleteBus(id); // Метод должен принимать объект Bus
+            if (!isDeleted)
+            {
+                return BadRequest("Ошибка при удалении автобуса");
+            }
+
+            return Ok();
         }
     }
 }

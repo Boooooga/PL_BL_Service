@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text;
 using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
 
 namespace PL_BL_Service
 {
@@ -32,6 +33,11 @@ namespace PL_BL_Service
 
         public void SendMessage(string message)
         {
+            if (_channel == null || !_channel.IsOpen)
+            {
+                throw new InvalidOperationException("Канал RabbitMQ не открыт.");
+            }
+
             var body = Encoding.UTF8.GetBytes(message);
             _channel.BasicPublish(exchange: "", routingKey: _requestQueue, basicProperties: null, body: body);
         }
@@ -39,6 +45,8 @@ namespace PL_BL_Service
         public string ReceiveMessage()
         {
             var result = _channel.BasicGet(queue: _responseQueue, autoAck: true);
+            if (result != null)
+                Console.WriteLine($"- Из очереди извлечено {Encoding.UTF8.GetString(result.Body.ToArray())}");
             return result != null ? Encoding.UTF8.GetString(result.Body.ToArray()) : null;
         }
     }
