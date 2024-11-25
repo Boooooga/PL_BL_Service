@@ -11,15 +11,15 @@ namespace PL_BL_Service.BL
             _rabbitMqClient = rabbitMqClient;
         }
         #region Автобусы
-        public List<Bus> GetAllBuses()
+        public async Task<List<Bus>> GetAllBuses()
         {
             try
             {
                 List<Bus> buses = new List<Bus>();
 
                 _rabbitMqClient.SendMessage("Buses GetAll");
-                Thread.Sleep(200);
-                string response = _rabbitMqClient.ReceiveMessage();
+                //Task.Delay(200).Wait();
+                string response = await _rabbitMqClient.ReceiveMessageAsync();
 
                 if (string.IsNullOrEmpty(response))
                 {
@@ -40,14 +40,14 @@ namespace PL_BL_Service.BL
                 return new List<Bus>();
             }
         }
-        public Bus GetBus(int id)
+        public async Task<Bus> GetBus(int id)
         {
             try
             {
                 Bus bus;
                 _rabbitMqClient.SendMessage($"Buses Get {id}");
-                Thread.Sleep(200);
-                string response = _rabbitMqClient.ReceiveMessage();
+                //Task.Delay(200).Wait();
+                string response = await _rabbitMqClient.ReceiveMessageAsync();
 
                 if (string.IsNullOrEmpty(response))
                 {
@@ -65,13 +65,13 @@ namespace PL_BL_Service.BL
                 return null;
             }
         }
-        public bool AddBus(Bus bus)
+        public async Task<bool> AddBus(Bus bus)
         {
             try
             {
                 _rabbitMqClient.SendMessage($"Buses Add {JsonConvert.SerializeObject(bus)}");
-                Thread.Sleep(200);
-                string response = _rabbitMqClient.ReceiveMessage();
+                //Task.Delay(200).Wait();
+                string response = await _rabbitMqClient.ReceiveMessageAsync();
 
                 if (string.IsNullOrEmpty(response))
                 {
@@ -86,13 +86,13 @@ namespace PL_BL_Service.BL
                 return false;
             }
         }
-        public bool UpdateBus(int id, Bus bus)
+        public async Task<bool> UpdateBus(int id, Bus bus)
         {
             try
             {
                 _rabbitMqClient.SendMessage($"Buses Update {id} {JsonConvert.SerializeObject(bus)}");
-                Thread.Sleep(200);
-                string response = _rabbitMqClient.ReceiveMessage();
+                //Task.Delay(200).Wait();
+                string response = await _rabbitMqClient.ReceiveMessageAsync();
 
                 if (string.IsNullOrEmpty(response))
                 {
@@ -108,11 +108,11 @@ namespace PL_BL_Service.BL
             }
         }
 
-        public bool DeleteBus(int id)
+        public async Task<bool> DeleteBus(int id)
         {
             _rabbitMqClient.SendMessage($"Buses Delete {id}");
-            Thread.Sleep(200);
-            string response = _rabbitMqClient.ReceiveMessage();
+            //Task.Delay(200).Wait();
+            string response = await _rabbitMqClient.ReceiveMessageAsync();
 
             if (string.IsNullOrEmpty(response))
             {

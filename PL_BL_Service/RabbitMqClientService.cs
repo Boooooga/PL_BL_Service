@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using System.Threading.Channels;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
@@ -7,9 +8,9 @@ namespace PL_BL_Service
 {
     public class RabbitMqClientService
     {
-        private readonly IModel _channel;
-        private readonly string _requestQueue;
-        private readonly string _responseQueue;
+        private IModel _channel;
+        private string _requestQueue;
+        private string _responseQueue;
 
         public RabbitMqClientService(IConfiguration configuration)
         {
@@ -48,6 +49,32 @@ namespace PL_BL_Service
             if (result != null)
                 Console.WriteLine($"- Из очереди извлечено {Encoding.UTF8.GetString(result.Body.ToArray())}");
             return result != null ? Encoding.UTF8.GetString(result.Body.ToArray()) : null;
+        }
+        public async Task<string> ReceiveMessageAsync()
+        {
+            _channel.QueueDeclare(_responseQueue, durable: false, exclusive: false, autoDelete: false, arguments: null);
+            var tcs = new TaskCompletionSource<string>();
+            var consumer = new EventingBasicConsumer(_channel);
+
+            EventHandler<BasicDeliverEventArgs> handler = null; // Локальная переменная для обработчика
+
+            handler = (model, ea) =>
+            {
+                var body = ea.Body.ToArray();
+                var message = Encoding.UTF8.GetString(body);
+                Console.WriteLine($"Received: {message}");
+
+                // Удаляем обработчик, чтобы остановить прослушивание
+                consumer.Received -= handler;
+
+                tcs.TrySetResult(message); // Завершаем задачу
+                _channel.QueueDelete(_responseQueue);
+            };
+
+            consumer.Received += handler;
+            _channel.BasicConsume(queue: "busQueueResponse", autoAck: true, consumer: consumer);
+
+            return await tcs.Task; // Возвращаем значение, когда оно установлено
         }
     }
 }

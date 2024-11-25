@@ -3,11 +3,11 @@ namespace PL_BL_Service.BL
 {
     public interface IBusinessService
     {
-        List<Bus> GetAllBuses();
-        Bus GetBus(int id);
-        bool AddBus(Bus bus);
-        bool UpdateBus(int id, Bus bus);
-        bool DeleteBus(int id);
+        Task<List<Bus>> GetAllBuses();
+        Task<Bus> GetBus(int id);
+        Task<bool> AddBus(Bus bus);
+        Task<bool> UpdateBus(int id, Bus bus);
+        Task<bool> DeleteBus(int id);
 
         //List<Driver> GetAllDrivers();
         //Task<string> GetDriverAsync(int id);

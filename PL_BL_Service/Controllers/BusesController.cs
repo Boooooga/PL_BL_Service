@@ -26,7 +26,9 @@ namespace PL_BL_Service.Controllers
         {
             try
             {
-                var buses = _businessService.GetAllBuses();
+                var task = _businessService.GetAllBuses();
+                task.Wait();
+                var buses = task.Result;
                 Console.WriteLine($"Получены автобусы");
                 return Ok(buses);
             }
@@ -42,7 +44,9 @@ namespace PL_BL_Service.Controllers
         {
             try
             {
-                var bus = _businessService.GetBus(id); // Вызов метода для получения одного автобуса по id
+                var task = _businessService.GetBus(id); // Вызов метода для получения одного автобуса по id
+                task.Wait();
+                var bus = task.Result;
                 if (bus == null)
                 {
                     return NotFound(); // Если автобус не найден, возвращаем 404
@@ -65,7 +69,7 @@ namespace PL_BL_Service.Controllers
                 return BadRequest("Данные не были переданы");
             }
 
-            bool isAdded = _businessService.AddBus(bus); // Метод должен принимать объект Bus
+            bool isAdded = _businessService.AddBus(bus).Result; // Метод должен принимать объект Bus
             if (!isAdded)
             {
                 return BadRequest("Ошибка при добавлении автобуса");
@@ -84,7 +88,7 @@ namespace PL_BL_Service.Controllers
                 return BadRequest("Данные не были переданы");
             }
 
-            bool isUpdated = _businessService.UpdateBus(id, bus);
+            bool isUpdated = _businessService.UpdateBus(id, bus).Result;
             if (!isUpdated)
             {
                 return BadRequest("Ошибка при обновлении автобуса");
@@ -95,7 +99,7 @@ namespace PL_BL_Service.Controllers
         [HttpPost("DeleteBus/{id}")]
         public IActionResult DeleteBus(int id)
         {
-            bool isDeleted = _businessService.DeleteBus(id); // Метод должен принимать объект Bus
+            bool isDeleted = _businessService.DeleteBus(id).Result; // Метод должен принимать объект Bus
             if (!isDeleted)
             {
                 return BadRequest("Ошибка при удалении автобуса");
