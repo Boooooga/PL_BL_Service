@@ -137,11 +137,7 @@
             const result = await response.json();
 
             // Проверка, если результат содержит manufacturer и id
-            if (result.manufacturer && result.id) {
-                document.getElementById('addBusResult').textContent = `Автобус ${result.manufacturer} вместимостью ${result.capacity} с регистрационным знаком ${result.registrationSign} добавлен.`;
-            } else {
-                alert("Ошибка при добавлении автобуса.");
-            }
+            document.getElementById('addBusResult').textContent = `Автобус ${result.manufacturer} вместимостью ${result.capacity} с регистрационным знаком ${result.registrationSign} добавлен.`;
         }
 
         // Функция для обновления существующего автобуса

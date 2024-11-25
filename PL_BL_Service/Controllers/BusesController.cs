@@ -69,7 +69,11 @@ namespace PL_BL_Service.Controllers
                 return BadRequest("Данные не были переданы");
             }
 
-            bool isAdded = _businessService.AddBus(bus).Result; // Метод должен принимать объект Bus
+            var task = _businessService.AddBus(bus);
+            task.Wait();
+            var taskCopy = task;
+            bool isAdded = task.Result;
+
             if (!isAdded)
             {
                 return BadRequest("Ошибка при добавлении автобуса");
@@ -88,7 +92,10 @@ namespace PL_BL_Service.Controllers
                 return BadRequest("Данные не были переданы");
             }
 
-            bool isUpdated = _businessService.UpdateBus(id, bus).Result;
+            var task = _businessService.UpdateBus(id, bus);
+            task.Wait();
+            bool isUpdated = task.Result;
+
             if (!isUpdated)
             {
                 return BadRequest("Ошибка при обновлении автобуса");
@@ -99,7 +106,10 @@ namespace PL_BL_Service.Controllers
         [HttpPost("DeleteBus/{id}")]
         public IActionResult DeleteBus(int id)
         {
-            bool isDeleted = _businessService.DeleteBus(id).Result; // Метод должен принимать объект Bus
+            var task = _businessService.DeleteBus(id); // Вызов метода для получения одного автобуса по id
+            task.Wait();
+            bool isDeleted = task.Result;
+
             if (!isDeleted)
             {
                 return BadRequest("Ошибка при удалении автобуса");
