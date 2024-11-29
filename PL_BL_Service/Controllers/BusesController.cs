@@ -5,9 +5,10 @@ using PL_BL_Service.Models;
 
 namespace PL_BL_Service.Controllers
 {
+    [Route("[controller]")]
     public class BusesController : Controller
     {
-        private readonly IBusinessService _businessService;
+        private readonly IBusinessService _businessService; 
 
         // Внедрение зависимости для использования BusinessService
         public BusesController(IBusinessService businessService)
@@ -21,7 +22,7 @@ namespace PL_BL_Service.Controllers
         }
 
         // Метод для получения всех автобусов
-        [HttpGet("GetAll")]
+        [HttpGet("GetAllBuses")]
         public IActionResult GetAllBuses()
         {
             try
@@ -29,7 +30,6 @@ namespace PL_BL_Service.Controllers
                 var task = _businessService.GetAllBuses();
                 task.Wait();
                 var buses = task.Result;
-                Console.WriteLine($"Получены автобусы");
                 return Ok(buses);
             }
             catch (Exception ex)
@@ -106,7 +106,7 @@ namespace PL_BL_Service.Controllers
         [HttpPost("DeleteBus/{id}")]
         public IActionResult DeleteBus(int id)
         {
-            var task = _businessService.DeleteBus(id); // Вызов метода для получения одного автобуса по id
+            var task = _businessService.DeleteBus(id); // Вызов метода для удаления автобуса по id
             task.Wait();
             bool isDeleted = task.Result;
 

@@ -9,16 +9,16 @@ namespace PL_BL_Service.BL
         Task<bool> UpdateBus(int id, Bus bus);
         Task<bool> DeleteBus(int id);
 
-        //List<Driver> GetAllDrivers();
-        //Task<string> GetDriverAsync(int id);
-        //Task<string> AddDriverAsync(string jsonValue);
-        //Task<string> UpdateDriverAsync(int id, string jsonValue);
-        //Task<string> RemoveDriverAsync(int id);
+        Task<List<Driver>> GetAllDrivers();
+        Task<Driver> GetDriver(int id);
+        Task<bool> AddDriver(Driver driver);
+        Task<bool> UpdateDriver(int id, Driver driver);
+        Task<bool> DeleteDriver(int id);
 
-        //Task<string> GetRoutesAsync();
-        //Task<string> GetRouteAsync(int id);
-        //Task<string> AddRouteAsync(string jsonValue);
-        //Task<string> UpdateRouteAsync(int id, string jsonValue);
-        //Task<string> RemoveRouteAsync(int id);
+        Task<List<Models.Route>> GetAllRoutes();
+        Task<Models.Route> GetRoute(int id);
+        Task<bool> AddRoute(Models.Route route);
+        Task<bool> UpdateRoute(int id, Models.Route route);
+        Task<bool> DeleteRoute(int id);
     }
 }

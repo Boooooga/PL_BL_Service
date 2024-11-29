@@ -19,7 +19,7 @@
 
         <div class="section">
             <h2>Вывести автобус по Id</h2>
-            <input type="number" id="getBusId" placeholder="Enter Bus ID">
+            <input type="number" id="getBusId" placeholder="Id автобуса">
             <button onclick="getBus()">Вывести автобус</button>
             <pre id="getBusResult"></pre>
         </div>
@@ -52,18 +52,18 @@
 
         <div class="section">
             <h2>Удалить автобус по Id</h2>
-            <input type="number" id="deleteBusId" placeholder="Enter Bus ID to Delete">
+            <input type="number" id="deleteBusId" placeholder="Id удаляемого автобуса">
             <button onclick="deleteBus()">Удалить автобус</button>
             <pre id="deleteBusResult"></pre>
         </div>
     </div>
 
     <script>
-        const baseUrl = 'https://localhost:7198'; // Замените на ваш API сервер
+        const baseUrl = 'https://localhost:7198/Buses';
 
         // Функция для получения всех автобусов
         async function getAllBuses() {
-            const response = await fetch(`${baseUrl}/GetAll`);
+            const response = await fetch(`${baseUrl}/GetAllBuses`);
             const result = await response.json();
             const buses = result; // Предположим, что получаем массив автобусов
 

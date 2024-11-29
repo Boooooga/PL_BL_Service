@@ -52,7 +52,7 @@ namespace PL_BL_Service
         }
         public async Task<string> ReceiveMessageAsync()
         {
-            _channel.QueueDeclare(_responseQueue, durable: false, exclusive: false, autoDelete: false, arguments: null);
+            //_channel.QueueDeclare(_responseQueue, durable: false, exclusive: false, autoDelete: false, arguments: null);
             var tcs = new TaskCompletionSource<string>();
             var consumer = new EventingBasicConsumer(_channel);
 
@@ -62,18 +62,19 @@ namespace PL_BL_Service
             {
                 var body = ea.Body.ToArray();
                 var message = Encoding.UTF8.GetString(body);
-                Console.WriteLine($"Received: {message}");
+                Console.WriteLine($" [x] Received: {message}");
 
                 // Удаляем обработчик, чтобы остановить прослушивание
                 consumer.Received -= handler;
-
+                
                 tcs.TrySetResult(message); // Завершаем задачу
-                _channel.QueueDelete(_responseQueue);
+
+                _channel.BasicCancel(ea.ConsumerTag);
+                //_channel.QueueDelete(_responseQueue);
             };
 
             consumer.Received += handler;
             _channel.BasicConsume(queue: "busQueueResponse", autoAck: true, consumer: consumer);
-
             return await tcs.Task; // Возвращаем значение, когда оно установлено
         }
     }
